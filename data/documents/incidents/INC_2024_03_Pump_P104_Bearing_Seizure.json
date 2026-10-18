@@ -1,0 +1,31 @@
+{
+  "document_id": "INC-2024-03-P104",
+  "title": "Historical Incident: Pump P-104 Drive-End Bearing Inner-Race Spalling and Overheating",
+  "date": "2024-03-14",
+  "asset_id": "P-104",
+  "asset_model": "FlowMax P-100",
+  "document_type": "historical_incident",
+  "reported_symptoms": [
+    "High vibration alert on drive-end bearing (overall RMS reached 5.8 mm/s)",
+    "Bearing housing temperature climbed to 82°C",
+    "High-pitched metallic clicking and grinding noise"
+  ],
+  "sensor_telemetry_findings": {
+    "dominant_spectral_peak_hz": 158.2,
+    "peak_type": "BPFI (Ball Pass Frequency Inner Race)",
+    "kurtosis": 4.82,
+    "crest_factor": 5.1,
+    "temperature_celsius": 82.4
+  },
+  "root_cause_diagnosis": "Fatigue spalling on the inner ring raceway of the DE bearing (SKF 6205-2Z/C3) caused by prolonged operation with degraded grease and particulate contamination.",
+  "corrective_actions_taken": [
+    "LOTO initiated per SOP-042 at MCC-02 cubicle 4B.",
+    "Pump decoupled and bearing housing disassembled.",
+    "Inspection confirmed severe micro-spalling and metal transfer along the inner raceway.",
+    "Replaced DE bearing with new SKF 6205-2Z/C3 using induction heater at 110°C per SOP-088.",
+    "Repacked with Mobil Polyrex EM synthetic grease.",
+    "Realigned pump-to-motor coupling to 0.03 mm offset using laser alignment.",
+    "Post-repair vibration dropped to 1.1 mm/s RMS (Zone A Good)."
+  ],
+  "lessons_learned": "Lubrication interval should not exceed 2,500 running hours. Ultrasonic acoustic monitoring should be scheduled bi-weekly."
+}
