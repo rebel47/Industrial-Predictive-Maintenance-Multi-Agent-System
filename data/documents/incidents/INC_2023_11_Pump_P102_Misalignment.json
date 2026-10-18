@@ -1,0 +1,30 @@
+{
+  "document_id": "INC-2023-11-P102",
+  "title": "Historical Incident: Pump P-102 Severe Shaft Misalignment and Elastomer Failure",
+  "date": "2023-11-20",
+  "asset_id": "P-102",
+  "asset_model": "FlowMax P-100",
+  "document_type": "historical_incident",
+  "reported_symptoms": [
+    "Elevated vibration (overall RMS 4.9 mm/s)",
+    "Unusual deep mechanical humming and rattling",
+    "Bearing temperature mildly elevated (64°C, normal range)"
+  ],
+  "sensor_telemetry_findings": {
+    "dominant_spectral_peak_hz": 58.3,
+    "peak_type": "2X Shaft Speed (Coupling Misalignment harmonic)",
+    "axial_to_radial_vibration_ratio": 0.72,
+    "kurtosis": 2.95,
+    "temperature_celsius": 63.8
+  },
+  "root_cause_diagnosis": "Angular and parallel misalignment between pump shaft and motor shaft caused by soft foot and loose foundation bolts on motor inboard feet. Temperature remained normal because bearing raceways had not yet spalled.",
+  "corrective_actions_taken": [
+    "Machine shut down and tagged out per SOP-042.",
+    "Coupling guard removed; shredded rubber spider elastomer debris found in coupling guard.",
+    "Soft foot measurement revealed 0.18 mm gap under motor front left foot.",
+    "Installed precision stainless steel shims under motor feet and laser-aligned to 0.02 mm.",
+    "Replaced coupling elastomer spider.",
+    "Torqued foundation bolts to 140 N*m per SOP-088."
+  ],
+  "lessons_learned": "Misalignment is characterized by prominent 2X running speed vibration and high axial vibration without immediate excessive bearing temperature rise."
+}
