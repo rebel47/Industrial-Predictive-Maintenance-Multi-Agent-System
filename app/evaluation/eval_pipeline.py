@@ -13,6 +13,7 @@ from app.graph.workflow import investigation_app
 from app.agents.supervisor import SupervisorAgent
 from app.graph.safety_verification import SafetyVerificationEngine
 from app.evaluation.test_scenarios import get_all_test_scenarios
+from app.evaluation.langsmith_eval import run_langsmith_eval
 
 class SystemEvaluator:
     """End-to-end evaluation harness measuring ML performance, retrieval quality, safety compliance, and failure tests."""
@@ -196,6 +197,7 @@ class SystemEvaluator:
         ret_metrics = self.evaluate_retrieval()
         anom_metrics = self.evaluate_anomaly_detector()
         scenarios_results = self.evaluate_failure_scenarios()
+        langsmith_report = run_langsmith_eval()
 
         all_passed = sum(1 for s in scenarios_results if s["passed"])
         total_scenarios = len(scenarios_results)
@@ -205,7 +207,8 @@ class SystemEvaluator:
             "retrieval": ret_metrics,
             "anomaly_detection": anom_metrics,
             "failure_scenarios": scenarios_results,
-            "scenario_success_rate": f"{all_passed}/{total_scenarios} ({all_passed/total_scenarios*100:.1f}%)"
+            "scenario_success_rate": f"{all_passed}/{total_scenarios} ({all_passed/total_scenarios*100:.1f}%)",
+            "langsmith_evaluation": langsmith_report
         }
 
 if __name__ == "__main__":
@@ -238,4 +241,14 @@ if __name__ == "__main__":
     ]
     print(tabulate(table_data, headers=["Scenario", "Description", "Result", "Notes"], tablefmt="grid"))
     print(f"\nOverall Scenario Pass Rate: {results['scenario_success_rate']}")
+
+    print("\n5. LANGSMITH EVALUATION METRICS:")
+    ls = results["langsmith_evaluation"]
+    print(f"  Mode:   {ls['mode'].upper()}")
+    print(f"  Status: {ls['status'].upper()}")
+    if "summary_scores" in ls:
+        for k, v in ls["summary_scores"].items():
+            print(f"  {k:30s}: {v*100:.1f}%")
+        print(f"\n  Note: {ls.get('langsmith_instructions', '')}")
     print("="*80 + "\n")
+
