@@ -1,0 +1,27 @@
+# Core Agentic & LLM
+openai>=1.50.0
+langgraph>=0.2.0
+langchain-core>=0.3.0
+pydantic>=2.7.0
+python-dotenv>=1.0.0
+
+# Numerical Analytics & Machine Learning
+numpy>=1.26.0
+scipy>=1.12.0
+pandas>=2.2.0
+scikit-learn>=1.4.0
+matplotlib>=3.8.0
+
+# RAG & Knowledge Retrieval
+rank-bm25>=0.2.2
+
+# Backend API & Interactive UI
+fastapi>=0.110.0
+uvicorn>=0.28.0
+streamlit>=1.32.0
+
+# Utilities & Testing
+tabulate>=0.9.0
+requests>=2.31.0
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
