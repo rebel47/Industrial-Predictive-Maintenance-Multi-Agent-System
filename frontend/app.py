@@ -115,6 +115,13 @@ if openai_key and openai_key != "your_openai_api_key_here":
 else:
     st.sidebar.info("Offline / Grounded Industrial Mode (Add OPENAI_API_KEY in .env for live GPT)")
 
+ls_key = os.getenv("LANGCHAIN_API_KEY") or os.getenv("LANGSMITH_API_KEY")
+if ls_key and ls_key.strip() != "your_langsmith_api_key_here":
+    st.sidebar.success(f"LangSmith Tracing Active ({os.getenv('LANGCHAIN_PROJECT', 'industrial-predictive-maintenance')})")
+else:
+    st.sidebar.caption("LangSmith Tracing: Inactive (Add LANGCHAIN_API_KEY in .env)")
+
+
 # ----------------- Main Interface -----------------
 st.title("Industrial Predictive Maintenance & Root-Cause Analysis")
 st.caption("Deterministic Numerical Analytics · Hybrid RAG · External Web Research · LangGraph Multi-Agent Orchestration · Safety Verification")

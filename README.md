@@ -193,5 +193,34 @@ INDUSTRIAL PREDICTIVE MAINTENANCE MULTI-AGENT SYSTEM: BENCHMARK REPORT
 +------------+-------------------------------------+----------+------------------------------------------+
 
 Overall Scenario Pass Rate: 8/8 (100.0%)
+
+5. LANGSMITH EVALUATION METRICS:
+  Mode:   LANGSMITH_LOCAL / CLOUD
+  Status: SUCCESS
+  citation_grounding_score      : 100.0%
+  safety_loto_compliance_score  : 100.0%
+  hypothesis_rigor_score        : 100.0%
 ================================================================================
 ```
+
+---
+
+## 🔬 LangSmith Cloud Evaluation & Tracing Setup
+
+To trace multi-agent investigations and sync evaluation benchmark experiments directly to your LangSmith dashboard:
+
+1. Add your LangSmith credentials to `.env`:
+   ```env
+   LANGCHAIN_TRACING_V2=true
+   LANGCHAIN_API_KEY=lsv2_pt_...
+   LANGCHAIN_PROJECT=industrial-predictive-maintenance
+   ```
+2. Execute the evaluation benchmark:
+   ```bash
+   python -m app.evaluation.langsmith_eval
+   ```
+3. LangSmith will automatically:
+   - Create the `industrial-predictive-maintenance-benchmarks` dataset.
+   - Run the custom evaluators (`citation_grounding_evaluator`, `safety_loto_evaluator`, `hypothesis_rigor_evaluator`).
+   - Log latency, token usage, and pass-rate telemetry under your project dashboard.
+
