@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  # Optional PostgreSQL with pgvector for production vector storage
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: industrial_maint_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: industrial_maintenance
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # FastAPI Backend API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o}
+      - DATABASE_URL=postgresql://postgres:postgrespassword@postgres:5432/industrial_maintenance
+    depends_on:
+      - postgres
+
+  # Streamlit Engineering Dashboard
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: streamlit run frontend/app.py --server.port 8501 --server.address 0.0.0.0
+    ports:
+      - "8501:8501"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o}
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
