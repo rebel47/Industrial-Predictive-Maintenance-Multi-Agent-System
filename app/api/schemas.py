@@ -11,6 +11,10 @@ class InvestigationRequest(BaseModel):
         default=None,
         description="Optional custom telemetry dictionary or sensor readings"
     )
+    fault_type: Optional[str] = Field(
+        default=None,
+        description="Optional preset fault type (e.g. INNER_RACE_FAULT, MISALIGNMENT, LUBRICATION_FAILURE, NORMAL)"
+    )
 
 class ApprovalRequest(BaseModel):
     decision: Literal["APPROVED", "REJECTED"]

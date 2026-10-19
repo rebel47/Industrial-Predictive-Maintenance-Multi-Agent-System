@@ -121,21 +121,23 @@ cp .env.example .env
 Add your `OPENAI_API_KEY` to enable live OpenAI GPT models (`gpt-4o` or `gpt-4o-mini`).
 *(Note: If no API key is provided, the system executes in deterministic offline mode with 100% full functionality).*
 
-### 3. Launch the Interactive Dashboard
-```bash
-streamlit run frontend/app.py
-```
-Open `http://localhost:8501` to view the engineering dashboard:
-- **Incident Console**: Run live investigations on preset or custom symptoms.
-- **Spectrum Visualizer**: View time-series trends and high-resolution FFT frequency spectrum.
-- **Evidence Matrix**: Inspect cited passages with exact source metadata.
-- **Document Browser**: Browse plant manuals and SOPs.
-
-### 4. Launch the REST API
+### 3. Launch the Backend REST API
 ```bash
 python -m uvicorn app.api.routes:app --reload --host 0.0.0.0 --port 8000
 ```
 API Documentation is available at `http://localhost:8000/docs`.
+
+### 4. Launch the Minimalistic Next.js Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Open `http://localhost:3000` to view the modern industrial engineering dashboard:
+- **Incident Console**: Run live multi-agent investigations on preset or custom symptoms with human-in-the-loop sign-off.
+- **Spectrum Visualizer**: View time-series trends (ISO 10816-3 thresholds) and high-resolution FFT frequency spectrum.
+- **Evidence Matrix**: Inspect cited passages with exact source metadata and support/contradict tags.
+- **Knowledge Base & SOPs**: Browse plant manuals, bearing replacement checklists, and LOTO procedures.
 
 ### 5. Run the Automated Evaluation Suite
 Run all unit tests:

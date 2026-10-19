@@ -30,17 +30,15 @@ services:
     depends_on:
       - postgres
 
-  # Streamlit Engineering Dashboard
+  # Next.js Engineering Dashboard
   frontend:
     build:
-      context: .
+      context: ./frontend
       dockerfile: Dockerfile
-    command: streamlit run frontend/app.py --server.port 8501 --server.address 0.0.0.0
     ports:
-      - "8501:8501"
+      - "3000:3000"
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o}
+      - BACKEND_URL=http://api:8000
     depends_on:
       - api
 
