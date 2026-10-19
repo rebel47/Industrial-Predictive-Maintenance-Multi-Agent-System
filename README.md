@@ -133,7 +133,7 @@ Open `http://localhost:8501` to view the engineering dashboard:
 
 ### 4. Launch the REST API
 ```bash
-python app/main.py
+python -m uvicorn app.api.routes:app --reload --host 0.0.0.0 --port 8000
 ```
 API Documentation is available at `http://localhost:8000/docs`.
 
