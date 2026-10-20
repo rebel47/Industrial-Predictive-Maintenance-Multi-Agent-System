@@ -2,7 +2,16 @@ from typing import Dict, Any, List
 from app.graph.state import InvestigationState, Evidence, Hypothesis, MaintenanceAction
 
 class SafetyVerificationEngine:
-    """Deterministic validation engine verifying citation grounding and industrial safety rules."""
+    """
+    Deterministic validation engine executing programmatic rule-based safety guardrails:
+    1. Citation ID Integrity: Verifies that referenced evidence IDs exist within retrieved records (guards against fabricated ID strings).
+    2. Safety Policy Interlocks: Programmatically requires Lockout/Tagout (LOTO) flags and hazard disclosures for physical intervention steps.
+    3. Evidence Sufficiency: Verifies minimum evidence thresholds are met.
+
+    Important boundary: This engine provides deterministic heuristic validation and safety guardrails.
+    It does not guarantee zero hallucinations or complete operational safety, which is why human engineering
+    review and sign-off is mandatory before executing physical work.
+    """
 
     @staticmethod
     def verify_investigation(state: InvestigationState) -> Dict[str, Any]:

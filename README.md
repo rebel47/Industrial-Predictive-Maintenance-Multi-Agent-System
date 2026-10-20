@@ -50,7 +50,7 @@ The system is coordinated via a shared, typed **LangGraph** state machine. Each 
                                          ▼
                         ┌───────────────────────────────────────────┐
                         │     Deterministic Safety Verification     │
-                        │ - Citation grounding check (no halluc.)   │
+                        │ - Citation ID verification guardrail      │
                         │ - Physical intervention LOTO interlock    │
                         └─────────────────────┬─────────────────────┘
                                          ▼
@@ -65,12 +65,13 @@ The system is coordinated via a shared, typed **LangGraph** state machine. Each 
 ## 📊 Dataset & Analytics Pipeline
 
 ### 1. Case Western Reserve University (CWRU) Bearing Data
-- Grounded on the 12 kHz Drive-End bearing vibration dataset (Normal baseline, Inner Race Defect `IR`, Outer Race Defect `OR`, and Ball Element Defect `BA`).
+- Grounded on the 12 kHz Drive-End bearing vibration benchmark (Normal baseline, Inner Race Defect `IR`, Outer Race Defect `OR`, and Ball Element Defect `BA`).
 - **Feature Extraction**:
   - Time-Domain: RMS, Kurtosis, Skewness, Crest Factor, Shape Factor, Peak-to-Peak.
   - Frequency-Domain: FFT amplitude spectrum, 1X running speed harmonic (29.2 Hz at 1750 RPM), 2X misalignment harmonic (58.3 Hz), and characteristic bearing defect frequencies (BPFI ~158 Hz, BPFO ~104 Hz).
 - **ISO 10816-3 Severity**: Automatically assigns Zone A (Good), Zone B (Acceptable), Zone C (Unsatisfactory), or Zone D (Unacceptable / Trip).
-- **ML Classifier**: Trained Random Forest model achieving **100% Macro-F1** on held-out test windows.
+- **Supervised Classifier**: Random Forest model trained on non-overlapping 2048-sample windows from baseline training signal runs and evaluated on a genuinely held-out, independent test recording run with zero window leakage (Macro-F1: 1.0000 across 44 test samples).  
+  *Note: While 100% Macro-F1 is achieved on this physically modeled benchmark with held-out non-overlapping recordings, physical plant environments with variable machine loads, sensor drift, and industrial noise will experience lower F1 under domain shift.*
 
 ---
 
@@ -84,7 +85,8 @@ Internal technical documents reside in `data/documents/`:
 - `incidents/INC_2024_03_Pump_P104_Bearing_Seizure.json`: Past incident record of P-104 bearing inner-race spalling.
 - `incidents/INC_2023_11_Pump_P102_Misalignment.json`: Past incident record of P-102 dynamic coupling misalignment.
 
-**Hybrid Retrieval**: Combines **BM25 lexical ranking** with **dense TF-IDF/semantic vector similarity** and **Reciprocal Rank Fusion (RRF)**, yielding a 1.0 Mean Reciprocal Rank (MRR).
+**Hybrid Retrieval**: Combines **BM25 lexical ranking** with **sparse statistical TF-IDF n-gram vector cosine similarity** and **Reciprocal Rank Fusion (RRF)**, yielding a 1.0 Mean Reciprocal Rank (MRR) across test benchmark queries.  
+*Note: The vector component utilizes sparse term frequency–inverse document frequency (TF-IDF) n-gram similarity rather than dense neural embeddings.*
 
 ---
 
@@ -96,12 +98,14 @@ Internal technical documents reside in `data/documents/`:
 
 ---
 
-## 🔒 Deterministic Safety Verification & Grounding
+## 🔒 Deterministic Validation & Safety Policy Guardrails
 
-The verification engine enforces zero tolerance for hallucinations and safety hazards:
-1. **Citation Grounding Interlock**: Every claim in the root-cause report and maintenance plan must reference a valid, retrieved `evidence_id` (`E001`, `E002`, ...). Fabricated citations automatically trigger `verification_status: FAILED`.
-2. **Hazardous Intervention LOTO Interlock**: Any physical step (uncoupling, dismounting bearings, opening casing) must mandate Lockout/Tagout (`requires_loto == True`). Unprotected work recommendations fail verification.
-3. **Mandatory Human-in-the-Loop Sign-off**: Consequential maintenance plans pause for certified reliability engineer review before execution.
+The system incorporates deterministic, programmatic validation and safety policy guardrails:
+1. **Citation Identifier Grounding Interlock**: Verifies that every evidence citation cited in hypotheses and maintenance steps (`E001`, `E002`, ...) exists in the retrieved evidence store, preventing fabricated citation identifiers from passing silently (`verification_status: FAILED`).
+2. **Hazardous Intervention LOTO Interlock**: Programmatically verifies that mechanical disassembly and physical contact steps (uncoupling, bearing replacement, casing disassembly) explicitly mandate Lockout/Tagout (`requires_loto == True`) and list safety hazards. Steps lacking required precautions fail verification.
+3. **Mandatory Human-in-the-Loop Engineering Sign-off**: AI recommendations are strictly advisory decision support. Consequential maintenance work orders require formal review and recorded sign-off by a certified plant reliability engineer before physical execution.
+
+*Boundary Notice: Deterministic validation enforces programmatic guardrails on citation ID existence and safety protocol metadata; it is not a mathematical guarantee of zero factual hallucinations in free-form natural language generation or guaranteed physical plant safety.*
 
 ---
 
@@ -160,7 +164,7 @@ INDUSTRIAL PREDICTIVE MAINTENANCE MULTI-AGENT SYSTEM: BENCHMARK REPORT
 
 1. CWRU FAULT CLASSIFIER (Supervised ML):
   Macro-F1 Score:    1.0000
-  Holdout Samples:   28
+  Holdout Samples:   44 (non-overlapping windows, held-out run)
   Classes Evaluated: ['NORMAL', 'INNER_RACE_FAULT', 'OUTER_RACE_FAULT', 'BALL_FAULT']
 
 2. ANOMALY DETECTION (Isolation Forest + Statistical Limits):
@@ -168,7 +172,7 @@ INDUSTRIAL PREDICTIVE MAINTENANCE MULTI-AGENT SYSTEM: BENCHMARK REPORT
   Recall:            1.0000
   False Alarm Rate:  0.0000
 
-3. HYBRID RAG RETRIEVAL (BM25 + TF-IDF Vector + RRF):
+3. HYBRID RAG RETRIEVAL (BM25 + Sparse TF-IDF Vector + RRF):
   Recall@1:          1.0000
   Recall@3:          1.0000
   Mean Recip. Rank:  1.0000

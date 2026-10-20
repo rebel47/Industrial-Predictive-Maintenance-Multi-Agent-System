@@ -49,21 +49,21 @@ class BearingFaultClassifier:
             f_feats["dominant_amplitude"]
         ]
 
-    def build_training_dataset(
+    def build_dataset_from_signals(
         self,
+        signals_dict: Dict[str, np.ndarray],
         window_size: int = 2048,
-        step_size: int = 1024,
+        step_size: int = 2048,
         sampling_rate_hz: int = 12000
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """Slice CWRU benchmark signals into overlapping windows to extract feature dataset."""
-        signals_dict = generate_cwru_benchmark_signals(duration_sec=3.0, sampling_rate_hz=sampling_rate_hz)
-        
+        """Slice vibration signals into non-overlapping windows to extract feature dataset."""
         X_list = []
         y_list = []
         
         for label_idx, cls_name in enumerate(self.CLASSES):
             sig = signals_dict[cls_name]
-            for start in range(0, len(sig) - window_size, step_size):
+            # Strictly non-overlapping windows (step_size == window_size) to prevent window leakage
+            for start in range(0, len(sig) - window_size + 1, step_size):
                 window = sig[start:start + window_size]
                 feats = self.extract_features_from_window(window, sampling_rate_hz=sampling_rate_hz)
                 X_list.append(feats)
@@ -71,20 +71,28 @@ class BearingFaultClassifier:
                 
         return np.array(X_list, dtype=np.float32), np.array(y_list, dtype=np.int32)
 
+    def build_training_dataset(
+        self,
+        window_size: int = 2048,
+        step_size: int = 2048,
+        sampling_rate_hz: int = 12000
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Convenience method returning training signals feature matrix."""
+        train_signals = generate_cwru_benchmark_signals(duration_sec=3.0, sampling_rate_hz=sampling_rate_hz, random_seed=42)
+        return self.build_dataset_from_signals(train_signals, window_size, step_size, sampling_rate_hz)
+
     def train(self) -> Dict[str, Any]:
-        """Train classifier and return cross-validation / holdout performance metrics."""
-        X, y = self.build_training_dataset()
-        
-        # Train-test split (80/20 stratified)
-        indices = np.arange(len(y))
-        np.random.seed(42)
-        np.random.shuffle(indices)
-        
-        split = int(0.8 * len(y))
-        train_idx, test_idx = indices[:split], indices[split:]
-        
-        X_train, y_train = X[train_idx], y[train_idx]
-        X_test, y_test = X[test_idx], y[test_idx]
+        """
+        Train classifier on training signal runs and evaluate on genuinely held-out,
+        independent test recording runs with zero window overlap.
+        """
+        # Independent training run (duration 3.0s, seed 42)
+        train_signals = generate_cwru_benchmark_signals(duration_sec=3.0, sampling_rate_hz=12000, random_seed=42)
+        X_train, y_train = self.build_dataset_from_signals(train_signals, window_size=2048, step_size=2048)
+
+        # Genuinely held-out independent test recording run (duration 2.0s, seed 999)
+        test_signals = generate_cwru_benchmark_signals(duration_sec=2.0, sampling_rate_hz=12000, random_seed=999)
+        X_test, y_test = self.build_dataset_from_signals(test_signals, window_size=2048, step_size=2048)
         
         self.clf.fit(X_train, y_train)
         self.is_trained = True
@@ -98,9 +106,11 @@ class BearingFaultClassifier:
         
         return {
             "macro_f1": round(macro_f1, 4),
+            "train_samples": len(y_train),
             "test_samples": len(y_test),
             "classes": self.CLASSES,
             "confusion_matrix": cm,
+            "evaluation_protocol": "independent_held_out_recordings_non_overlapping_windows",
             "feature_importances": {
                 name: round(float(imp), 4)
                 for name, imp in zip(self.FEATURE_NAMES, self.clf.feature_importances_)
